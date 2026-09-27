@@ -1,99 +1,475 @@
-ReDrop — README
-What This Project Is
+# ReDrop
 
-A working prototype of ReDrop, a self-service redelivery and delivery-preferences experience, built for the TS Academy Hajime Cohort 2026 capstone (Logistics/Delivery Experience theme, Group 34).
+**A self-service redelivery and delivery-preferences experience**
 
-Live demo link: [paste your Lovable published link here] GitHub repo: [paste your repo link here]
+Built for the **TS Academy Hajime Cohort 2026 Capstone — Logistics / Delivery Experience Theme**
+**Group 34**
 
-How This Was Built
+**Live Demo:** https://redrop-your-delivery-buddy.lovable.app
+**GitHub Repository:** https://github.com/kessien908-tech/ReDrop-Capstone
 
-This project was built using Lovable, an AI-assisted "vibe coding" tool. The team did not write code directly; instead, features were built by describing what was needed in plain language and reviewing/testing what the tool generated.
+---
 
-What Was Generated
-Overall app structure and navigation (Home, Order Status, and Reschedule screens)
-Order status tracking screen with a 4-step stepper (Placed, Preparing, Out for delivery, Delivered)
-Loading, empty, and error states for the order status screen
-Delivery failed notification banner
-Reschedule form (date and time window selection, optional delivery instructions)
-Recovery confirmation screen
-Branded header and full color scheme applied across all screens
-Mocked sample data for orders, delivery attempts, and available time slots
-What We Modified or Adjusted Ourselves
-Adjusted the color scheme to match our design system (accent blue, amber for warnings, green for success)
-Added a branded header bar consistently across every screen after identifying it was missing
-Fixed spacing so content wasn't touching the edges of the mobile frame
-Added inline validation on the reschedule form to require a time window before submission
-What We Chose Not to Build, and Why
-Real GPS/location tracking: explored via a technical trial early in the project, but deliberately dropped — the team lacked prior experience with map/GPS integration and the added complexity wasn't justified given the project timeline (see Scope-Update-TrackIt-Pivot.md)
-Real payments processing: out of scope for this MVP, since it doesn't affect the core problem being tested
-Rider-side mobile app: not needed to validate the customer-facing recovery experience
-Real SMS/push notifications: in-app notification is sufficient to demonstrate the concept for this MVP
-Warning/confirmation popups (e.g., "are you sure you want to leave?"): reviewed and deliberately deprioritized, since none are required by the capstone brief and team time was directed to usability testing instead
-Architecture Overview
-[Customer]
-    → opens app
-    → views Order Status screen (Flow 1)
-    → if delivery fails → sees Delivery Failed banner
-    → taps "See recovery options" → Reschedule flow (Flow 2)
-    → confirms new time → Recovery Confirmed screen
-    → Order Status updates to reflect new delivery time
-    → Delivered
-Frontend: Built in Lovable, deployed via Lovable's built-in hosting
-Data: Mocked sample orders, delivery attempts, and available time slots — hardcoded, not a real database
-No real backend integration — all data is simulated for demo purposes, matching an MVP built with mocked data per the capstone brief's allowances
-API / Data Approach
+## 1. Project Overview
 
-Since this is an MVP, data is mocked, not connected to a real backend:
+ReDrop is a customer-facing prototype designed to make **failed delivery recovery** simpler and more transparent.
 
-Order data: 3 sample orders hardcoded into the app, each with a different status (one "delivered" to demo the happy path, one "failed" to demo the recovery flow, one "preparing" to show an in-progress state)
-Delivery attempts: for the failed order, a mock attempt record includes the attempt number, timestamp, and failure reason
-Reschedule requests: when a user submits the reschedule form, the new date, time window, and optional delivery instructions are stored temporarily in the app's memory during the session, not persisted to a database
-Available slots: a small mocked list of date/time combinations marked as available or fully booked, used to demo the "no slots available" edge case
+Instead of leaving customers unsure about what happens after a failed delivery, ReDrop allows them to:
 
-If this were built beyond the MVP stage, this section would describe a real database (e.g., Firebase, Supabase) and real vendor/rider data feeds.
+1. View their current order status
+2. Understand when and why a delivery failed
+3. Choose a new delivery date and time
+4. Add optional delivery instructions
+5. Confirm the new delivery arrangement
+6. Return to the order status page and see the updated delivery information
 
-Testing Evidence
+The project focuses on the **customer recovery experience** after a failed delivery, rather than attempting to build a complete logistics platform.
 
-Basic test plan:
+---
 
- Customer can view order status and see it update through all states
- Failed delivery triggers a visible notification
- Customer can complete the reschedule flow end-to-end
- App works on both desktop and mobile browser width
- No broken links/buttons in either flow (see findings below — demo controls need separating from customer view)
+## 2. Problem We Wanted to Solve
 
-Test results:
+A failed delivery can leave customers with several unanswered questions:
 
-A full usability review was conducted on the reschedule/recovery flow, following the same path a customer would take: opening recovery options, choosing to reschedule, selecting a new date and time, adding a delivery note, confirming the change, and checking the order page afterward.
+* What happened to my delivery?
+* Will another attempt be made?
+* When will it arrive?
+* Do I need to contact someone?
+* Can I choose a more convenient time?
 
-Overall finding: The core rescheduling journey works and next steps are generally easy to find. The main improvement needed is ensuring the interface always tells the customer one consistent story (e.g., if a redelivery is booked for tomorrow, every status shown on the page should support that, rather than conflicting labels appearing in different places).
+ReDrop explores how a self-service recovery experience could give customers clearer information and more control without requiring them to contact customer support.
 
-Key issues found, by severity:
+---
 
-Severity	Issue	Recommended Fix
-Critical	After rescheduling, the page shows "Redelivery scheduled" but the order status simultaneously changes to "Out for Delivery" — conflicting information about whether the driver is already coming	Keep status as "Redelivery scheduled" / "Awaiting redelivery" until the order actually goes out again
-High	"Today" remains selectable as a time option even after all time windows for the day have passed	Remove or disable expired time windows
-High	The status stepper still shows Placed → Preparing → Out for delivery → Delivered even when a delivery has failed, with no failure state reflected in the tracker itself	Show "Delivery Failed / Redelivery Required" directly in the status tracker area
-High	Demo/testing controls (Advance status, Restart, Show error, Show empty state) appear directly under the real customer-facing order information	Hide these during customer-facing sessions or clearly separate them as tester/admin-only controls
-High	The final confirmation after rescheduling doesn't provide strong enough reassurance, given the customer is already recovering from a failed delivery	Clearly show the reschedule was saved, repeat the new date/time, and explain what happens next
-Medium	"See recovery options" wording isn't everyday delivery language, causing a brief pause before customers understand its meaning	Consider simpler wording such as "Choose what to do next"
-Medium	"Attempt 1 of 2 allowed" doesn't explain what happens if the second attempt also fails	Add a short explanation of what happens after the final allowed attempt
-Medium	Selected date/time on the reschedule form isn't visually prominent enough	Use a stronger selected-state style plus a checkmark, not color alone
-Medium	Delivery instructions field lacks guidance on what it's for	Add helper text clarifying it's for access/drop-off/contact instructions, with any limits stated
-Medium	Some secondary text and status colors may not be distinguishable for users with low vision or color-vision differences	Check contrast/text size; ensure important states are never conveyed by color alone
-Low/Medium	"Back" and "Confirm" button labels are generic	Use more specific labels like "Back to recovery options" and "Confirm reschedule"
-Low	Some screens have excessive white space around the main card, giving a prototype-like feel	Tighten vertical spacing without crowding the screen
+## 3. Our Solution
 
-Note on scope: The rescheduling flow itself was not found to be unnecessarily complicated — the general sequence is understandable. Most issues identified are about wording or system state clarity, not structural redesign.
+We designed a simple recovery flow:
 
-Known Limitations / Tech Debt
-Data is fully mocked — no real backend, so nothing persists between sessions
-No real notification delivery (SMS/push) — in-app only
-Status labeling inconsistency: the order status can show conflicting information after a reschedule (see Critical finding above) — flagged for fix, not yet resolved as of this writing
-Demo/testing controls are visible on the same screen as the customer-facing view — these were added to simulate status changes for demo purposes but are not separated from the real UI, which could confuse a first-time viewer
-Failed delivery state is not reflected in the main status tracker — the tracker continues showing the standard 4-stage progression even when a delivery has failed, so failure feels disconnected from the tracking experience
-Expired time slots (e.g., "Today" late in the day) are not automatically disabled
-Accessibility: some status indicators may rely partly on color, and contrast on secondary text has not been formally audited
-Team
+```text
+Customer opens app
+        ↓
+Views Order Status
+        ↓
+Delivery fails
+        ↓
+Sees Delivery Failed notification
+        ↓
+Chooses recovery options
+        ↓
+Selects new date + time
+        ↓
+Adds optional delivery instructions
+        ↓
+Confirms reschedule
+        ↓
+Sees Recovery Confirmation
+        ↓
+Order Status reflects new delivery arrangement
+```
 
-Built by Group 34, Hajime Cohort 2026, for the TS Academy Product Management Capstone.
+The prototype focuses on keeping the customer informed at each stage and reducing uncertainty after a failed delivery.
+
+
+## 4. MVP Scope
+
+### Included in the MVP
+
+* Order status tracking
+* Four-stage delivery tracker
+* Delivery failure notification
+* Self-service rescheduling
+* Date and time-slot selection
+* Optional delivery instructions
+* Confirmation after rescheduling
+* Loading, empty and error states
+* Mock order and delivery data
+* Desktop and mobile browser layouts
+
+### Deliberately Out of Scope
+
+| Feature                     | Reason                                                                                                                                                          |
+| --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Real GPS/location tracking  | Explored during an early technical trial but removed because the complexity was not justified within the project timeline. See `Scope-Update-TrackIt-Pivot.md`. |
+| Real payments               | Not required to test the core failed-delivery recovery problem.                                                                                                 |
+| Rider-side app              | Outside the customer-facing scope of this MVP.                                                                                                                  |
+| SMS/push notifications      | In-app notifications were sufficient to demonstrate the concept.                                                                                                |
+| Confirmation/warning popups | Deprioritised because they were not required by the brief and team time was better spent on usability testing.                                                  |
+
+---
+
+## 5. Key User Flows
+
+### Flow 1 — Track an Order
+
+The customer opens the application and views their current order status.
+
+The prototype includes four delivery stages:
+
+**Placed → Preparing → Out for Delivery → Delivered**
+
+Different mock orders are used to demonstrate different points in the journey.
+
+### Flow 2 — Recover From a Failed Delivery
+
+When a delivery fails, the customer sees a delivery failure notification and can access the recovery flow.
+
+They can:
+
+* Review their delivery situation
+* Select a new date
+* Select an available time window
+* Add optional delivery instructions
+* Confirm the new delivery arrangement
+
+The customer then receives confirmation and can return to the order status screen.
+
+---
+
+## 6. What We Built With Lovable
+
+ReDrop was built using **Lovable**, an AI-assisted "vibe coding" tool.
+
+The team did not write the application code directly. Instead, we described requirements and functionality in natural language, reviewed the generated output, tested the experience, and iteratively adjusted the product.
+
+### Generated With Lovable
+
+* Overall application structure and navigation
+* Home, Order Status and Reschedule screens
+* Four-step order status tracker
+* Loading, empty and error states
+* Delivery failure notification
+* Reschedule form
+* Date and time-window selection
+* Recovery confirmation screen
+* Mock order and delivery data
+* Available time-slot logic
+* Initial visual styling
+
+### Adjusted by the Team
+
+Through review and testing, we identified areas where the generated experience needed improvement.
+
+We:
+
+* Adjusted the colour scheme to match our design system
+* Added a consistent branded header
+* Fixed mobile spacing and edge padding
+* Added validation requiring a time window before submission
+* Reviewed the recovery journey through a usability-focused test
+* Identified state, wording and accessibility issues for further iteration
+
+This iterative process was an important part of the project: rather than treating the generated prototype as finished, we used testing to identify where the experience needed improvement.
+
+---
+
+## 7. Technical Architecture
+
+```text
+┌──────────────────────┐
+│       Customer       │
+└──────────┬───────────┘
+           │
+           ▼
+┌──────────────────────┐
+│    ReDrop Frontend   │
+│       (Lovable)      │
+└──────────┬───────────┘
+           │
+           ▼
+┌──────────────────────┐
+│     Mocked Data      │
+│                      │
+│ • Orders             │
+│ • Delivery attempts  │
+│ • Time slots         │
+│ • Reschedule data    │
+└──────────────────────┘
+```
+
+### Frontend
+
+Built and deployed using Lovable's built-in hosting.
+
+### Data
+
+The prototype uses mocked data rather than a production database.
+
+There is currently no real backend integration.
+
+### Persistence
+
+Reschedule information is stored temporarily in the application's session memory and is not persisted between sessions.
+
+---
+
+## 8. Mock Data
+
+The prototype contains three sample orders:
+
+| Order           | Purpose                                         |
+| --------------- | ----------------------------------------------- |
+| Delivered order | Demonstrates the completed/happy path           |
+| Failed delivery | Demonstrates the recovery and rescheduling flow |
+| Preparing order | Demonstrates an order that is still in progress |
+
+For the failed order, the prototype also includes:
+
+* Attempt number
+* Delivery timestamp
+* Failure reason
+* Available rescheduling slots
+
+The available-slot data also includes fully booked options so that an unavailable-slot scenario can be demonstrated.
+
+---
+
+## 9. Testing & Validation
+
+We conducted a usability review of the main rescheduling journey.
+
+The test followed the same path a customer would take:
+
+```text
+Open recovery options
+        ↓
+Choose to reschedule
+        ↓
+Select date
+        ↓
+Select time
+        ↓
+Add delivery note
+        ↓
+Confirm change
+        ↓
+Return to order status
+        ↓
+Check updated delivery information
+```
+
+### Basic Functional Test Plan
+
+| Test                                                      | Result              |
+| --------------------------------------------------------- | ------------------- |
+| View order status                                         | ✅ Passed            |
+| View different order states                               | ✅ Passed            |
+| See delivery failure notification                         | ✅ Passed            |
+| Complete rescheduling flow                                | ✅ Passed            |
+| Update order after rescheduling                           | ⚠️ Needs refinement |
+| Responsive desktop/mobile layout                          | ✅ Passed            |
+| Validate required time window                             | ✅ Passed            |
+| Test loading/empty/error states                           | ✅ Implemented       |
+| Confirm all customer-facing controls are production-ready | ⚠️ Needs refinement |
+
+---
+
+## 10. Usability Testing Findings
+
+The core rescheduling journey was understandable and could be completed successfully.
+
+The main issues identified were related to **state clarity, wording and consistency**, rather than the overall structure of the flow.
+
+### Critical
+
+**Conflicting order status after rescheduling**
+
+After a customer schedules a redelivery, the interface can show "Redelivery scheduled" while simultaneously displaying "Out for Delivery."
+
+**Recommended fix:**
+Keep the status as **"Redelivery scheduled"** or **"Awaiting redelivery"** until the next delivery attempt actually begins.
+
+---
+
+### High Priority
+
+**Expired time slots remain selectable**
+
+"Today" can remain available even after all of today's delivery windows have passed.
+
+**Recommended fix:**
+Automatically disable or remove expired time slots.
+
+**Failed delivery isn't represented in the status tracker**
+
+The tracker continues to show:
+
+**Placed → Preparing → Out for Delivery → Delivered**
+
+even after a delivery has failed.
+
+**Recommended fix:**
+Introduce a visible failure state such as:
+
+**Delivery Failed → Redelivery Required**
+
+**Demo controls are visible to customers**
+
+Controls such as:
+
+* Advance status
+* Restart
+* Show error
+* Show empty state
+
+appear alongside the customer-facing experience.
+
+**Recommended fix:**
+Hide these controls during customer sessions or clearly separate them into a tester/admin area.
+
+**Confirmation could provide stronger reassurance**
+
+After a failed delivery, the customer needs confidence that the new arrangement has actually been saved.
+
+**Recommended fix:**
+Clearly display:
+
+* Confirmation that the change was saved
+* The new delivery date
+* The new time window
+* What the customer should expect next
+
+---
+
+### Medium Priority
+
+**"See recovery options" could be clearer**
+
+This wording may require the customer to stop and interpret what it means.
+
+**Possible alternative:**
+"Choose what to do next"
+
+**"Attempt 1 of 2 allowed" lacks context**
+
+Customers aren't told what happens if the final attempt also fails.
+
+**Recommended fix:**
+Briefly explain what happens after the final allowed attempt.
+
+**Selected date/time could be more prominent**
+
+The selected option should have a stronger visual state and a checkmark rather than relying primarily on colour.
+
+**Delivery instructions need guidance**
+
+Add helper text explaining what customers should use this field for, such as access, drop-off or contact instructions.
+
+**Accessibility needs further review**
+
+Some status indicators rely partly on colour and some secondary text may need stronger contrast.
+
+Important states should remain understandable without relying on colour alone.
+
+---
+
+### Low Priority
+
+**Button labels could be more specific**
+
+Instead of generic labels such as:
+
+* "Back"
+* "Confirm"
+
+consider:
+
+* "Back to recovery options"
+* "Confirm reschedule"
+
+**Spacing**
+
+Some screens have large amounts of unused white space around the main card. This could be tightened while maintaining comfortable spacing.
+
+---
+
+## 11. What We Learned
+
+The project highlighted an important distinction between **a working prototype and a clear customer experience**.
+
+The rescheduling functionality itself was relatively straightforward. The more significant usability challenges came from making sure the system communicated one consistent state to the customer.
+
+For example, after a customer successfully reschedules, every part of the interface needs to communicate the same thing:
+
+> The previous delivery failed, a new delivery has been booked, and the next attempt has not started yet.
+
+This reinforced the importance of testing not just whether a feature works, but whether the customer understands what the system is telling them.
+
+---
+
+## 12. Known Limitations & Technical Debt
+
+The current prototype is intentionally an MVP and has several limitations:
+
+* No production backend
+* No persistent database
+* No real-time order data
+* No real GPS tracking
+* No real SMS or push notifications
+* Mocked delivery attempts and time slots
+* Reschedule data does not persist between sessions
+* Failed delivery state needs to be integrated into the main tracker
+* Demo/testing controls need to be separated from the customer experience
+* Expired time slots are not automatically disabled
+* Accessibility and colour contrast require further auditing
+
+---
+
+## 13. What We Would Build Next
+
+If the project continued beyond the MVP, our next priorities would be:
+
+### 1. Improve state consistency
+
+Ensure order status, delivery banners, confirmation screens and tracking information always reflect the same delivery state.
+
+### 2. Improve the failed-delivery experience
+
+Make the failed state a first-class part of the tracking journey rather than treating it as a separate notification.
+
+### 3. Connect real data
+
+Replace mocked data with a backend such as Firebase or Supabase and connect the experience to real order and delivery information.
+
+### 4. Improve accessibility
+
+Conduct a formal accessibility review covering:
+
+* Colour contrast
+* Text size
+* Keyboard navigation
+* Screen-reader support
+* Non-colour status indicators
+
+### 5. Separate customer and testing experiences
+
+Move prototype controls into a dedicated testing/admin environment.
+
+### 6. Add real notifications
+
+Introduce SMS and/or push notifications for important delivery updates.
+
+---
+
+## 14. Project Status
+
+**Current status:** Working MVP / prototype
+
+The core customer journey can be demonstrated end-to-end using mocked data.
+
+The main remaining improvements relate to **state consistency, failed-delivery tracking, accessibility and separating demo controls from the customer-facing experience.**
+
+---
+
+## 15. Team
+
+**Group 34 — TS Academy Hajime Cohort 2026**
+
+Built as part of the **Product Management Capstone — Logistics / Delivery Experience Theme**.
+
+---
+
+## 16. Links
+
+**Live Demo:** https://redrop-your-delivery-buddy.lovable.app
+
+**GitHub Repository:** https://github.com/kessien908-tech/ReDrop-Capstone
